@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<library xmlns="duell">
+
+    <supported-duell-tool version="4.0.0+" />
+
+	<duelllib name="filesystem" version="7.0.0+" />
+
+</library>

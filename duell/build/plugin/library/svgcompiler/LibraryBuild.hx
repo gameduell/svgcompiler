@@ -1,10 +1,14 @@
 /*
- * Copyright (c) 2003-2015 GameDuell GmbH, All Rights Reserved
+ * Copyright (c) 2003-2016 GameDuell GmbH, All Rights Reserved
  * This document is strictly confidential and sole property of GameDuell GmbH, Berlin, Germany
  */
 package duell.build.plugin.library.svgcompiler;
 
-import filesystem.FileSystem;
+import vectorx.svg.SvgSerializer;
+import aggx.svg.SVGData;
+import aggx.core.StreamInterface;
+import aggx.svg.SVGElement;
+
 import duell.build.objects.Configuration;
 
 import duell.build.plugin.library.filesystem.AssetProcessorRegister;
@@ -25,9 +29,6 @@ import sys.io.File;
 using duell.helpers.HashHelper;
 using StringTools;
 
-/**
- * @author jxav
- */
 class LibraryBuild
 {
     private static inline var PACK_CONFIGURATION_FILE: String = "pack.json";
@@ -63,6 +64,16 @@ class LibraryBuild
 
 
         AssetProcessorRegister.registerProcessor(process, AssetProcessorPriority.AssetProcessorPriorityMedium, 0);
+
+        //var data = new Data(1000);
+        //data.readFloat32();
+
+        //var element = SVGElement.create();
+        //element.fill_none();
+
+        var stream: StreamInterface = null;
+        var svgData = new SVGData();
+        SvgSerializer.writeSvgData(stream, svgData);
     }
 
     private function process(): Void

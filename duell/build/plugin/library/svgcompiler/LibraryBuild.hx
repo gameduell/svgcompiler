@@ -4,6 +4,9 @@
  */
 package duell.build.plugin.library.svgcompiler;
 
+import duell.helpers.BinaryFileWriter;
+import aggx.svg.SVGParser;
+import aggx.svg.SVGDataBuilder;
 import vectorx.svg.SvgSerializer;
 import aggx.svg.SVGData;
 import aggx.core.StreamInterface;
@@ -31,13 +34,7 @@ using StringTools;
 
 class LibraryBuild
 {
-    private static inline var PACK_CONFIGURATION_FILE: String = "pack.json";
-    inline static private var TMP_FOLDER: String = "_tmp";
-
-    private var atlasPathList: Array<String> = [];
-
-    private var sourceToTargetPathMap: Map<String, String> = new Map<String, String>();
-    private var hashChangedMap: Map<String, Bool> = new Map<String, Bool>();
+    private var writer: BinaryFileWriter = new BinaryFileWriter();
 
     public function new()
     {}
@@ -49,30 +46,14 @@ class LibraryBuild
         if (Configuration.getData().PLATFORM == null || Configuration.getData().PLATFORM.PLATFORM_NAME == "unitylayout")
             return;
 
-        // if no parsing is made we need to add the default state
-        //if (Configuration.getData().LIBRARY.ATLASPACKER == null)
-        //{
-        //    Configuration.getData().LIBRARY.ATLASPACKER = LibraryConfiguration.getData();
-        //}
-
-
-        pathToAtlasPackerStagingArea = Path.join([Configuration.getData().OUTPUT, "svgcompiler", "temp"]);
-        PathHelper.mkdir(pathToAtlasPackerStagingArea);
-
 
         AssetProcessorRegister.registerProcessor(process, AssetProcessorPriority.AssetProcessorPriorityMedium, 0);
-
-        //var data = new Data(1000);
-        //data.readFloat32();
-
-        //var element = SVGElement.create();
-        //element.fill_none();
     }
 
     private function process(): Void
     {
         trace("process()");
-        trace('folderы: ${AssetProcessorRegister.foldersThatChanged}');
+        trace('folders: ${AssetProcessorRegister.foldersThatChanged}');
         for (folder in AssetProcessorRegister.foldersThatChanged)
         {
             var path = Path.join([AssetProcessorRegister.pathToTemporaryAssetArea, folder]);
@@ -88,34 +69,45 @@ class LibraryBuild
 
                 var srcPath = Path.join([path, file]);
                 var dstPath = srcPath + ".bin";
+
+                processSvg(srcPath, dstPath, file);
             }
         }
 
-        var stream: StreamInterface = null;
-        var svgData = new SVGData();
-        SvgSerializer.writeSvgData(stream, svgData);
+        throw "dbg";
     }
 
-    private function processSvg(src: String, dst: String): Void
+    private function processSvg(src: String, dst: String, file: String): Void
     {
-        
-    }
+        trace('processSvg:\n src: $src\n dst: $dst');
 
-    private function filesChanged(files: Array<String>): Bool
-    {
-        return files.filter(function(file: String) {
-            return folderChanged(Path.directory(file));
-        }).length != 0;
-    }
-
-    private function folderChanged(path: String): Bool
-    {
-        for (changedPath in AssetProcessorRegister.foldersThatChanged)
+        if (FileSystem.exists(dst))
         {
-            if (changedPath == Path.addTrailingSlash(path) || changedPath.indexOf(path) == 0)
-                return true;
+            FileSystem.deleteFile(dst);
         }
-        return false;
-    }
 
+        var content = File.getContent(src);
+        //trace(File.getContent(src));
+
+        var builder = new SVGDataBuilder();
+        var parser = new SVGParser(builder);
+        parser.processXML(Xml.parse(content));
+        var svgData: SVGData = builder.data;
+
+        if (svgData.width == 0 || svgData.height == 0)
+        {
+            LogHelper.warn('Width or height is not specified for svg file $file');
+        }
+
+        //trace(svgData.elementStorage);
+
+        writer.open(dst);
+        SvgSerializer.writeSvgData(writer, svgData);
+        writer.close();
+
+        if (FileSystem.exists(src))
+        {
+            FileSystem.deleteFile(src);
+        }
+    }
 }

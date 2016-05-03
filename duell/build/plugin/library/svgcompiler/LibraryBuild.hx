@@ -34,8 +34,6 @@ class LibraryBuild
     private static inline var PACK_CONFIGURATION_FILE: String = "pack.json";
     inline static private var TMP_FOLDER: String = "_tmp";
 
-    private var pathToAtlasPackerStagingArea: String;
-
     private var atlasPathList: Array<String> = [];
 
     private var sourceToTargetPathMap: Map<String, String> = new Map<String, String>();
@@ -48,7 +46,6 @@ class LibraryBuild
     {
         trace("postParse()");
 
-        // Atlas not needed for unknown plattform or unitylayout
         if (Configuration.getData().PLATFORM == null || Configuration.getData().PLATFORM.PLATFORM_NAME == "unitylayout")
             return;
 
@@ -70,30 +67,38 @@ class LibraryBuild
 
         //var element = SVGElement.create();
         //element.fill_none();
+    }
+
+    private function process(): Void
+    {
+        trace("process()");
+        trace('folderы: ${AssetProcessorRegister.foldersThatChanged}');
+        for (folder in AssetProcessorRegister.foldersThatChanged)
+        {
+            var path = Path.join([AssetProcessorRegister.pathToTemporaryAssetArea, folder]);
+            trace('path: $path');
+            var files = PathHelper.getRecursiveFileListUnderFolder(path);
+
+            for (file in files)
+            {
+                if (!file.endsWith(".svg") && !file.endsWith(".svg.bytes"))
+                {
+                    continue;
+                }
+
+                var srcPath = Path.join([path, file]);
+                var dstPath = srcPath + ".bin";
+            }
+        }
 
         var stream: StreamInterface = null;
         var svgData = new SVGData();
         SvgSerializer.writeSvgData(stream, svgData);
     }
 
-    private function process(): Void
+    private function processSvg(src: String, dst: String): Void
     {
-        trace("process()");
-        /*for (cfg in customAtlasList)
-        {
-            if (filesChanged(cfg.files) || folderChanged(Path.directory(cfg.pack)))
-            {
-             //processCustomAtlas(cfg);
-            }
-        }*/
-
-        for (atlasPath in atlasPathList)
-        {
-            if (folderChanged(atlasPath))
-            {
-                //processNormalAtlas(atlasPath);
-            }
-        }
+        
     }
 
     private function filesChanged(files: Array<String>): Bool
@@ -111,15 +116,6 @@ class LibraryBuild
                 return true;
         }
         return false;
-    }
-
-    private function getPathToStagingArea(path: String): String
-    {
-        if (sourceToTargetPathMap.exists(path))
-        {
-            return sourceToTargetPathMap.get(path);
-        }
-        return path;
     }
 
 }

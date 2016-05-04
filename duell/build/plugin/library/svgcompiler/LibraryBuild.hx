@@ -41,23 +41,19 @@ class LibraryBuild
 
     public function postParse(): Void
     {
-        trace("postParse()");
-
         if (Configuration.getData().PLATFORM == null || Configuration.getData().PLATFORM.PLATFORM_NAME == "unitylayout")
             return;
-
 
         AssetProcessorRegister.registerProcessor(process, AssetProcessorPriority.AssetProcessorPriorityMedium, 0);
     }
 
     private function process(): Void
     {
-        trace("process()");
-        trace('folders: ${AssetProcessorRegister.foldersThatChanged}');
+        //trace('folders: ${AssetProcessorRegister.foldersThatChanged}');
         for (folder in AssetProcessorRegister.foldersThatChanged)
         {
+            LogHelper.info("", 'svgcompiler - Processing changed folder $folder');
             var path = Path.join([AssetProcessorRegister.pathToTemporaryAssetArea, folder]);
-            trace('path: $path');
             var files = PathHelper.getRecursiveFileListUnderFolder(path);
 
             for (file in files)
@@ -67,19 +63,19 @@ class LibraryBuild
                     continue;
                 }
 
+                LogHelper.info("", 'svgcompiler - Processing changed file $file');
+
                 var srcPath = Path.join([path, file]);
                 var dstPath = srcPath + ".bin";
 
                 processSvg(srcPath, dstPath, file);
             }
         }
-
-        throw "dbg";
     }
 
     private function processSvg(src: String, dst: String, file: String): Void
     {
-        trace('processSvg:\n src: $src\n dst: $dst');
+        //trace('processSvg:\n src: $src\n dst: $dst');
 
         if (FileSystem.exists(dst))
         {

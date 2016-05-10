@@ -53,7 +53,13 @@ class LibraryBuild
         for (folder in AssetProcessorRegister.foldersThatChanged)
         {
             LogHelper.info("", 'svgcompiler - Processing changed folder $folder');
+
             var path = Path.join([AssetProcessorRegister.pathToTemporaryAssetArea, folder]);
+            if (!FileSystem.exists(path))
+            {
+                continue;
+            }
+
             var files = PathHelper.getRecursiveFileListUnderFolder(path);
 
             for (file in files)

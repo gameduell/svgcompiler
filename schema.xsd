@@ -4,8 +4,6 @@
         xmlns:d="duell"
         elementFormDefault="qualified">
 
-    <xs:include schemaLocation="https://raw.githubusercontent.com/gameduell/duell/master/schema/common_schema.xsd" />
-
     <xs:complexType name="svgcompiler">
         <xs:sequence>
             <xs:element name="file" minOccurs="0" maxOccurs="unbounded" type="d:Path"/>
